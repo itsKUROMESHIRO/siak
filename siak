@@ -22,3 +22,7 @@ end)
 tab.newButton("Crosshair", "pinky", function()
     loadstring(game:HttpGet("https://rawscripts.net/raw/Simple-Customizable-Lightweight-Crosshair-Open-Source_430"))()
 end)
+
+tab.newButton("BETTER HEAD HITBOX", "BANABLE", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/better%20head"))()
+end)
