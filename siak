@@ -1,5 +1,5 @@
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
-local window = DrRayLibrary:Load("2FK Hub (Admin)", "Default")
+local window = DrRayLibrary:Load("2FK Hub v0.4", "Default")
 
 local tab = DrRayLibrary.newTab("War tycoon tab", "ImageIdHere")
 
@@ -11,7 +11,7 @@ tab.newButton("NoTree", "Remove some useless tree", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/WTC%20tree%20remover"))()
 end)
 
-tab.newButton("Head", "big ah head", function()
+tab.newButton("Fps Boost", "no lag sheesh", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/head"))()
 end)
 
