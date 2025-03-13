@@ -7,8 +7,8 @@ tab.newButton("esp", "xrayy suiiii", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/ugh"))()
 end)
 
-tab.newButton("NoTree", "Remove some useless tree", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/WTC%20tree%20remover"))()
+tab.newButton("NoLeaves", "Remove some useless leaves", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/WTC%20LEAVES%20REMOVER"))()
 end)
 
 tab.newButton("Fps Boost", "no lag sheesh", function()
