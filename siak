@@ -7,7 +7,7 @@ tab.newButton("esp", "xrayy suiiii", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/ugh"))()
 end)
 
-tab.newButton("NoLeaves", "Remove some useless leaves", function()
+tab.newButton("NoLeaves", "Remove every useless leaves", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/WTC%20LEAVES%20REMOVER"))()
 end)
 
