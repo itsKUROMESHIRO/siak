@@ -1,5 +1,5 @@
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
-local window = DrRayLibrary:Load("2FK Hub v0.4", "Default")
+local window = DrRayLibrary:Load("2FK Hub v0.5", "Default")
 
 local tab = DrRayLibrary.newTab("War tycoon tab", "ImageIdHere")
 
@@ -7,8 +7,8 @@ tab.newButton("esp", "xrayy suiiii", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/ugh"))()
 end)
 
-tab.newButton("Fps Boost", "no lag sheesh", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/head"))()
+tab.newButton("No lag", "no particle and grass", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/WTC%20NO%20LAG"))()
 end)
 
 tab.newButton("Aim", "100% not aimbot legit", function()
@@ -21,4 +21,8 @@ end)
 
 tab.newButton("BETTER HEAD HITBOX", "BANABLE", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/better%20head"))()
+end)
+
+tab.newButton("Fps Boost", "if you click this, you're not able to use a plane", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/head"))()
 end)
