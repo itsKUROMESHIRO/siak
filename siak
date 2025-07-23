@@ -1,7 +1,7 @@
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 local window = DrRayLibrary:Load("2FK Hub v0.5", "Default")
 
-local tab = DrRayLibrary.newTab("War tycoon tab", "ImageIdHere")
+local tab = DrRayLibrary.newTab("Universal First Person Shooter Script", "ImageIdHere")
 
 tab.newButton("esp", "xrayy suiiii", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/ugh"))()
