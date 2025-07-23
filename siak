@@ -1,5 +1,5 @@
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
-local window = DrRayLibrary:Load("2FK Hub v0.5", "Default")
+local window = DrRayLibrary:Load("2FK Hub v0.6 REWRITE", "Default")
 
 local tab = DrRayLibrary.newTab("Universal First Person Shooter Script", "ImageIdHere")
 
