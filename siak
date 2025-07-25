@@ -7,10 +7,6 @@ tab.newButton("esp", "xrayy suiiii", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/ugh"))()
 end)
 
-tab.newButton("DON'T ENABLE THIS", "DISABLED DUE TO A BUG", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/workspace.CurrentCamera/refs/heads/main/head"))()
-end)
-
 tab.newButton("Aim", "100% not aimbot legit", function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/PABLOSleuth2/Scripts1/main/RobloxScripts/TEST/aimbot_v2.lua'))()
 end)
