@@ -1,0 +1,541 @@
+-- S43X EL hub v5.9 - Advanced Mobile Engine 💕
+-- Clean Tracking Setup | Text Input Configurations | Stroke Thickness Control
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+local TweenService = game:GetService("TweenService")
+local Camera = workspace.CurrentCamera or workspace:WaitForChild("Camera")
+local LocalPlayer = Players.LocalPlayer
+
+-- Configuration Table
+_G.AimbotConfig = {
+    Enabled = true,
+    FovSize = 90,
+    Smoothing = 0.2,
+    FovThickness = 1,
+    VisibleCheck = true,
+    TeamCheck = true,
+    FriendsCheck = true,
+    ThemeColor = Color3.fromRGB(255, 180, 200) -- Material Pastel Pink
+}
+
+local Themes = {
+    {Name = "Material Pink 🌸", Color = Color3.fromRGB(255, 180, 200)},
+    {Name = "Ocean Breeze 🌊", Color = Color3.fromRGB(164, 217, 255)},
+    {Name = "Mint Garden 🌿", Color = Color3.fromRGB(168, 230, 207)},
+    {Name = "Lavender Sky 🍇", Color = Color3.fromRGB(218, 190, 255)},
+    {Name = "Butter Toast 🍯", Color = Color3.fromRGB(255, 230, 160)}
+}
+local currentThemeIndex = 1
+
+-- Screen GUI Setup
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "S43X_Material_Engine"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Custom UI FOV Circle (Clean Material Stroke)
+local UICircleFrame = Instance.new("Frame")
+UICircleFrame.Size = UDim2.new(0, _G.AimbotConfig.FovSize * 2, 0, _G.AimbotConfig.FovSize * 2)
+UICircleFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+UICircleFrame.BackgroundTransparency = 1
+UICircleFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+UICircleFrame.Parent = ScreenGui
+
+local UICircleStroke = Instance.new("UIStroke")
+UICircleStroke.Thickness = _G.AimbotConfig.FovThickness
+UICircleStroke.Color = _G.AimbotConfig.ThemeColor
+UICircleStroke.Transparency = 0.6
+UICircleStroke.Parent = UICircleFrame
+
+local UICircleCorner = Instance.new("UICorner")
+UICircleCorner.CornerRadius = UDim.new(1, 0)
+UICircleCorner.Parent = UICircleFrame
+
+-- Main Material Window Layout
+local MainFrame = Instance.new("CanvasGroup")
+MainFrame.Size = UDim2.new(0, 320, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -160, 0.25, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 24)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 1
+MainStroke.Color = Color3.fromRGB(40, 40, 44)
+MainStroke.Parent = MainFrame
+
+-- Material Header Bar
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 56)
+Header.BackgroundTransparency = 1
+Header.Parent = MainFrame
+
+local HeaderPadding = Instance.new("UIPadding")
+HeaderPadding.PaddingLeft = UDim.new(0, 24)
+HeaderPadding.PaddingRight = UDim.new(0, 24)
+HeaderPadding.Parent = Header
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0.7, 0, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "S43X EL HUB"
+Title.TextColor3 = Color3.fromRGB(230, 230, 235)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 32, 0, 32)
+CloseButton.Position = UDim2.new(1, -32, 0.5, -16)
+CloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 34)
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Color3.fromRGB(200, 200, 205)
+CloseButton.TextSize = 12
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = Header
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(1, 0)
+CloseCorner.Parent = CloseButton
+
+local ReopenButton = Instance.new("TextButton")
+ReopenButton.Size = UDim2.new(0, 56, 0, 56)
+ReopenButton.Position = UDim2.new(0, 24, 0.15, 0)
+ReopenButton.BackgroundColor3 = _G.AimbotConfig.ThemeColor
+ReopenButton.Text = "⚡"
+ReopenButton.TextColor3 = Color3.fromRGB(30, 30, 35)
+ReopenButton.TextSize = 22
+ReopenButton.Visible = false
+ReopenButton.Parent = ScreenGui
+
+local ReopenCorner = Instance.new("UICorner")
+ReopenCorner.CornerRadius = UDim.new(0, 16)
+ReopenCorner.Parent = ReopenButton
+
+-- Scroll Container
+local Container = Instance.new("ScrollingFrame")
+Container.Size = UDim2.new(1, 0, 1, -56)
+Container.Position = UDim2.new(0, 0, 0, 56)
+Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ScrollBarThickness = 0
+Container.Parent = MainFrame
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 10)
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.Parent = Container
+
+local ContainerPadding = Instance.new("UIPadding")
+ContainerPadding.PaddingTop = UDim.new(0, 4)
+ContainerPadding.PaddingBottom = UDim.new(0, 16)
+ContainerPadding.PaddingLeft = UDim.new(0, 16)
+ContainerPadding.PaddingRight = UDim.new(0, 16)
+ContainerPadding.Parent = Container
+
+-- Smooth Draggable Module
+local dragging, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    ReopenButton.Visible = true
+end)
+
+ReopenButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    ReopenButton.Visible = false
+end)
+
+-- Global Theme Update Engine
+local function UpdateUIColors(newColor)
+    _G.AimbotConfig.ThemeColor = newColor
+    UICircleStroke.Color = newColor
+    ReopenButton.BackgroundColor3 = newColor
+    
+    for _, item in ipairs(Container:GetChildren()) do
+        if item:IsA("Frame") and item:FindFirstChild("IsSlider") then
+            item.Track.Fill.BackgroundColor3 = newColor
+        elseif item:IsA("Frame") and item:FindFirstChild("ConfigKey") then
+            local key = item.ConfigKey.Value
+            if _G.AimbotConfig[key] then
+                item.SwitchBase.BackgroundColor3 = newColor
+            end
+        end
+    end
+end
+
+-- Typeable Value Configuration Component
+local function CreateTypeableSetting(name, configKey, isDecimal, min, max, callback)
+    local SettingFrame = Instance.new("Frame")
+    SettingFrame.Size = UDim2.new(1, 0, 0, 50)
+    SettingFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+    SettingFrame.Parent = Container
+
+    local SettingCorner = Instance.new("UICorner")
+    SettingCorner.CornerRadius = UDim.new(0, 16)
+    SettingCorner.Parent = SettingFrame
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0, 16, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = name
+    Label.TextColor3 = Color3.fromRGB(225, 225, 230)
+    Label.TextSize = 13
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = SettingFrame
+
+    local TextBox = Instance.new("TextBox")
+    TextBox.Size = UDim2.new(0, 80, 0, 30)
+    TextBox.Position = UDim2.new(1, -96, 0.5, -15)
+    TextBox.BackgroundColor3 = Color3.fromRGB(38, 38, 42)
+    TextBox.Text = tostring(_G.AimbotConfig[configKey])
+    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextBox.TextSize = 13
+    TextBox.Font = Enum.Font.GothamBold
+    TextBox.ClearTextOnFocus = false
+    TextBox.Parent = SettingFrame
+
+    local BoxCorner = Instance.new("UICorner")
+    BoxCorner.CornerRadius = UDim.new(0, 10)
+    BoxCorner.Parent = TextBox
+
+    local BoxStroke = Instance.new("UIStroke")
+    BoxStroke.Thickness = 1
+    BoxStroke.Color = Color3.fromRGB(55, 55, 60)
+    BoxStroke.Parent = TextBox
+
+    TextBox.FocusLost:Connect(function(enterPressed)
+        local inputNum = tonumber(TextBox.Text)
+        if inputNum then
+            inputNum = math.clamp(inputNum, min, max)
+            if isDecimal then
+                inputNum = math.round(inputNum * 100) / 100
+            else
+                inputNum = math.floor(inputNum)
+            end
+            _G.AimbotConfig[configKey] = inputNum
+            TextBox.Text = tostring(inputNum)
+            callback(inputNum)
+        else
+            TextBox.Text = tostring(_G.AimbotConfig[configKey])
+        end
+    end)
+end
+
+-- Thick Pill Slider Component
+local function CreateSlider(name, min, max, default, callback)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Size = UDim2.new(1, 0, 0, 54)
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+    SliderFrame.Parent = Container
+    
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 16)
+    SliderCorner.Parent = SliderFrame
+
+    local IsSliderFlag = Instance.new("BoolValue")
+    IsSliderFlag.Name = "IsSlider"
+    IsSliderFlag.Value = true
+    IsSliderFlag.Parent = SliderFrame
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -24, 0, 20)
+    Label.Position = UDim2.new(0, 16, 0, 6)
+    Label.BackgroundTransparency = 1
+    Label.Text = name .. ": " .. default
+    Label.TextColor3 = Color3.fromRGB(215, 215, 220)
+    Label.TextSize = 12
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = SliderFrame
+
+    local Track = Instance.new("Frame")
+    Track.Name = "Track"
+    Track.Size = UDim2.new(1, -32, 0, 8)
+    Track.Position = UDim2.new(0, 16, 0, 34)
+    Track.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+    Track.Parent = SliderFrame
+    
+    local TrackCorner = Instance.new("UICorner")
+    TrackCorner.CornerRadius = UDim.new(1, 0)
+    TrackCorner.Parent = Track
+
+    local Fill = Instance.new("Frame")
+    Fill.Name = "Fill"
+    local initPercent = (default - min) / (max - min)
+    Fill.Size = UDim2.new(initPercent, 0, 1, 0)
+    Fill.BackgroundColor3 = _G.AimbotConfig.ThemeColor
+    Fill.Parent = Track
+    
+    local FillCorner = Instance.new("UICorner")
+    FillCorner.CornerRadius = UDim.new(1, 0)
+    FillCorner.Parent = Fill
+
+    local Thumb = Instance.new("Frame")
+    Thumb.Size = UDim2.new(0, 14, 0, 14)
+    Thumb.Position = UDim2.new(initPercent, -7, 0.5, -7)
+    Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Thumb.Parent = Track
+
+    local ThumbCorner = Instance.new("UICorner")
+    ThumbCorner.CornerRadius = UDim.new(1, 0)
+    ThumbCorner.Parent = Thumb
+
+    local isSliding = false
+    local function updateSlider(input)
+        local inputPos = input.Position.X
+        local trackPos = Track.AbsolutePosition.X
+        local trackWidth = Track.AbsoluteSize.X
+        if trackWidth <= 0 then return end
+        
+        local percent = math.clamp((inputPos - trackPos) / trackWidth, 0, 1)
+        Fill.Size = UDim2.new(percent, 0, 1, 0)
+        Thumb.Position = UDim2.new(percent, -7, 0.5, -7)
+        
+        local value = math.floor(min + (percent * (max - min)))
+        Label.Text = name .. ": " .. value
+        callback(value)
+    end
+
+    SliderFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isSliding = true
+            updateSlider(input)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if isSliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            updateSlider(input)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isSliding = false
+        end
+    end)
+end
+
+-- Android Material Design Adaptive Switch
+local function CreateToggle(name, configKey)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, 0, 0, 48)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+    ToggleFrame.Parent = Container
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 16)
+    ToggleCorner.Parent = ToggleFrame
+
+    local KeyValue = Instance.new("StringValue")
+    KeyValue.Name = "ConfigKey"
+    KeyValue.Value = configKey
+    KeyValue.Parent = ToggleFrame
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.65, 0, 1, 0)
+    Label.Position = UDim2.new(0, 16, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = name
+    Label.TextColor3 = Color3.fromRGB(225, 225, 230)
+    Label.TextSize = 13
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = ToggleFrame
+
+    local SwitchBase = Instance.new("TextButton")
+    SwitchBase.Name = "SwitchBase"
+    SwitchBase.Size = UDim2.new(0, 44, 0, 24)
+    SwitchBase.Position = UDim2.new(1, -60, 0.5, -12)
+    SwitchBase.BackgroundColor3 = _G.AimbotConfig[configKey] and _G.AimbotConfig.ThemeColor or Color3.fromRGB(50, 50, 55)
+    SwitchBase.Text = ""
+    SwitchBase.AutoButtonColor = false
+    SwitchBase.Parent = ToggleFrame
+
+    local SwitchCorner = Instance.new("UICorner")
+    SwitchCorner.CornerRadius = UDim.new(1, 0)
+    SwitchCorner.Parent = SwitchBase
+
+    local SwitchBall = Instance.new("Frame")
+    SwitchBall.Size = _G.AimbotConfig[configKey] and UDim2.new(0, 18, 0, 18) or UDim2.new(0, 14, 0, 14)
+    SwitchBall.Position = _G.AimbotConfig[configKey] and UDim2.new(1, -22, 0.5, -9) or UDim2.new(0, 5, 0.5, -7)
+    SwitchBall.BackgroundColor3 = _G.AimbotConfig[configKey] and Color3.fromRGB(30, 30, 35) or Color3.fromRGB(180, 180, 185)
+    SwitchBall.Parent = SwitchBase
+
+    local BallCorner = Instance.new("UICorner")
+    BallCorner.CornerRadius = UDim.new(1, 0)
+    BallCorner.Parent = SwitchBall
+
+    SwitchBase.MouseButton1Click:Connect(function()
+        _G.AimbotConfig[configKey] = not _G.AimbotConfig[configKey]
+        local isOn = _G.AimbotConfig[configKey]
+        
+        TweenService:Create(SwitchBase, TweenInfo.new(0.2, Enum.EasingStyle.Cubic), {
+            BackgroundColor3 = isOn and _G.AimbotConfig.ThemeColor or Color3.fromRGB(50, 50, 55)
+        }):Play()
+        
+        TweenService:Create(SwitchBall, TweenInfo.new(0.2, Enum.EasingStyle.Cubic), {
+            Position = isOn and UDim2.new(1, -22, 0.5, -9) or UDim2.new(0, 5, 0.5, -7),
+            Size = isOn and UDim2.new(0, 18, 0, 18) or UDim2.new(0, 14, 0, 14),
+            BackgroundColor3 = isOn and Color3.fromRGB(30, 30, 35) or Color3.fromRGB(180, 180, 185)
+        }):Play()
+    end)
+end
+
+local ThemeFrame = Instance.new("Frame")
+ThemeFrame.Size = UDim2.new(1, 0, 0, 48)
+ThemeFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+ThemeFrame.Parent = Container
+
+local ThemeCorner = Instance.new("UICorner")
+ThemeCorner.CornerRadius = UDim.new(0, 16)
+ThemeCorner.Parent = ThemeFrame
+
+local ThemeLabel = Instance.new("TextLabel")
+ThemeLabel.Size = UDim2.new(0, 120, 1, 0)
+ThemeLabel.Position = UDim2.new(0, 16, 0, 0)
+ThemeLabel.BackgroundTransparency = 1
+ThemeLabel.Text = "Material Tint"
+ThemeLabel.TextColor3 = Color3.fromRGB(185, 185, 190)
+ThemeLabel.TextSize = 13
+ThemeLabel.Font = Enum.Font.GothamSemibold
+ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
+ThemeLabel.Parent = ThemeFrame
+
+local CycleBtn = Instance.new("TextButton")
+CycleBtn.Size = UDim2.new(1, -145, 0, 28)
+CycleBtn.Position = UDim2.new(1, -133, 0.5, -14)
+CycleBtn.BackgroundColor3 = Color3.fromRGB(38, 38, 42)
+CycleBtn.Text = Themes[currentThemeIndex].Name
+CycleBtn.TextColor3 = Color3.fromRGB(240, 240, 245)
+CycleBtn.TextSize = 11
+CycleBtn.Font = Enum.Font.GothamBold
+CycleBtn.Parent = ThemeFrame
+
+local CycleCorner = Instance.new("UICorner")
+CycleCorner.CornerRadius = UDim.new(0, 10)
+CycleCorner.Parent = CycleBtn
+
+CycleBtn.MouseButton1Click:Connect(function()
+    currentThemeIndex = currentThemeIndex + 1
+    if currentThemeIndex > #Themes then currentThemeIndex = 1 end
+    local activePreset = Themes[currentThemeIndex]
+    CycleBtn.Text = activePreset.Name
+    UpdateUIColors(activePreset.Color)
+end)
+
+-- Assemble Interface Panels
+CreateTypeableSetting("FOV Radius (Typeable)", "FovSize", false, 10, 500, function(val)
+    UICircleFrame.Size = UDim2.new(0, val * 2, 0, val * 2)
+end)
+
+CreateTypeableSetting("Lock Buffer (Typeable)", "Smoothing", true, 0.01, 3.0, function(val) end)
+
+CreateSlider("FOV Line Thickness", 1, 8, _G.AimbotConfig.FovThickness, function(val)
+    _G.AimbotConfig.FovThickness = val
+    UICircleStroke.Thickness = val
+end)
+
+CreateToggle("Aimbot Tracking", "Enabled")
+CreateToggle("Wall Occlusion Check", "VisibleCheck")
+CreateToggle("Filter Own Team", "TeamCheck")
+CreateToggle("Filter Player Friends", "FriendsCheck")
+
+Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    Container.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 20)
+end)
+
+-- Core Target Lock Processing Algorithm
+local function getClosestPlayer()
+    local closest, dist = nil, math.huge
+    local sizeX = Camera.ViewportSize.X
+    local sizeY = Camera.ViewportSize.Y
+    if sizeX <= 0 or sizeY <= 0 then return nil end
+
+    local mousePos = Vector2.new(sizeX / 2, sizeY / 2)
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == LocalPlayer or not plr.Character then continue end
+        
+        local head = plr.Character:FindFirstChild("Head") or plr.Character:FindFirstChild("HumanoidRootPart")
+        local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+        if not head or (humanoid and humanoid.Health <= 0) then continue end
+
+        if _G.AimbotConfig.TeamCheck and plr.Team == LocalPlayer.Team then continue end
+        if _G.AimbotConfig.FriendsCheck and LocalPlayer:IsFriendsWith(plr.UserId) then continue end
+
+        local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+        if not onScreen then continue end
+
+        local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+        if distance > _G.AimbotConfig.FovSize then continue end
+
+        if _G.AimbotConfig.VisibleCheck then
+            local parts = Camera:GetPartsObscuringTarget({head.Position}, {LocalPlayer.Character, plr.Character})
+            if #parts > 0 then continue end
+        end
+
+        if distance < dist then
+            dist = distance
+            closest = plr
+        end
+    end
+    return closest
+end
+
+-- Render Frame Main Loop
+RunService.RenderStepped:Connect(function()
+    local sizeX = Camera.ViewportSize.X
+    local sizeY = Camera.ViewportSize.Y
+    if sizeX <= 0 or sizeY <= 0 then return end
+    
+    local midX = sizeX / 2
+    local midY = sizeY / 2
+    UICircleFrame.Position = UDim2.new(0, midX, 0, midY)
+
+    if not _G.AimbotConfig.Enabled then return end
+
+    local target = getClosestPlayer()
+    if target and target.Character and target.Character:FindFirstChild("Head") then
+        local head = target.Character.Head
+        local headPos = head.Position
+        
+        -- Smooth look vector updates
+        local direction = (headPos - Camera.CFrame.Position).Unit
+        local current = Camera.CFrame.LookVector
+        local weight = math.clamp(_G.AimbotConfig.Smoothing, 0.01, 1.0)
+        local smoothed = current:Lerp(direction, weight)
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position +
