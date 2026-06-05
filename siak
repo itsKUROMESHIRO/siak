@@ -8,7 +8,7 @@ tab.newButton("esp", "xrayy suiiii", function()
 end)
 
 tab.newButton("Aim", "100% not aimbot legit", function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/itsKUROMESHIRO/siak/refs/heads/main/aim'))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/itsKUROMESHIRO/siak/refs/heads/main/aim"))()
 end)
 
 tab.newButton("Crosshair", "pinky", function()
