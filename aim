@@ -1,5 +1,5 @@
--- S43X EL hub v5.9 - Advanced Mobile Engine 💕
--- Clean Tracking Setup | Text Input Configurations | Stroke Thickness Control
+-- S43X EL hub v5.8 - Advanced Mobile Engine 💕
+-- Vector Projection Tracers | Text Input Configurations | Stroke Thickness Control
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -18,6 +18,7 @@ _G.AimbotConfig = {
     VisibleCheck = true,
     TeamCheck = true,
     FriendsCheck = true,
+    TracersEnabled = true,
     ThemeColor = Color3.fromRGB(255, 180, 200) -- Material Pastel Pink
 }
 
@@ -56,9 +57,17 @@ local UICircleCorner = Instance.new("UICorner")
 UICircleCorner.CornerRadius = UDim.new(1, 0)
 UICircleCorner.Parent = UICircleFrame
 
+-- Mobile UI Tracer Line Frame (Clean Center System)
+local UITracerFrame = Instance.new("Frame")
+UITracerFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+UITracerFrame.BackgroundColor3 = _G.AimbotConfig.ThemeColor
+UITracerFrame.BorderSizePixel = 0
+UITracerFrame.Visible = false
+UITracerFrame.Parent = ScreenGui
+
 -- Main Material Window Layout
 local MainFrame = Instance.new("CanvasGroup")
-MainFrame.Size = UDim2.new(0, 320, 0, 400)
+MainFrame.Size = UDim2.new(0, 320, 0, 440)
 MainFrame.Position = UDim2.new(0.5, -160, 0.25, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
 MainFrame.BorderSizePixel = 0
@@ -181,6 +190,7 @@ local function UpdateUIColors(newColor)
     _G.AimbotConfig.ThemeColor = newColor
     UICircleStroke.Color = newColor
     ReopenButton.BackgroundColor3 = newColor
+    UITracerFrame.BackgroundColor3 = newColor
     
     for _, item in ipairs(Container:GetChildren()) do
         if item:IsA("Frame") and item:FindFirstChild("IsSlider") then
@@ -194,7 +204,7 @@ local function UpdateUIColors(newColor)
     end
 end
 
--- Typeable Value Configuration Component
+-- NEW: Typeable Value Configuration Component (For Radius and Smoothing)
 local function CreateTypeableSetting(name, configKey, isDecimal, min, max, callback)
     local SettingFrame = Instance.new("Frame")
     SettingFrame.Size = UDim2.new(1, 0, 0, 50)
@@ -216,6 +226,7 @@ local function CreateTypeableSetting(name, configKey, isDecimal, min, max, callb
     Label.TextXAlignment = Enum.TextXAlignment.Left
     Label.Parent = SettingFrame
 
+    -- Standard Android Box Text Input Component
     local TextBox = Instance.new("TextBox")
     TextBox.Size = UDim2.new(0, 80, 0, 30)
     TextBox.Position = UDim2.new(1, -96, 0.5, -15)
@@ -239,6 +250,7 @@ local function CreateTypeableSetting(name, configKey, isDecimal, min, max, callb
     TextBox.FocusLost:Connect(function(enterPressed)
         local inputNum = tonumber(TextBox.Text)
         if inputNum then
+            -- Enforce absolute bounds limits safely
             inputNum = math.clamp(inputNum, min, max)
             if isDecimal then
                 inputNum = math.round(inputNum * 100) / 100
@@ -254,7 +266,7 @@ local function CreateTypeableSetting(name, configKey, isDecimal, min, max, callb
     end)
 end
 
--- Thick Pill Slider Component
+-- Standard Thick Pill Slider Component (Used for FOV Thickness adjustments)
 local function CreateSlider(name, min, max, default, callback)
     local SliderFrame = Instance.new("Frame")
     SliderFrame.Size = UDim2.new(1, 0, 0, 54)
@@ -470,6 +482,7 @@ CreateSlider("FOV Line Thickness", 1, 8, _G.AimbotConfig.FovThickness, function(
 end)
 
 CreateToggle("Aimbot Tracking", "Enabled")
+CreateToggle("Target Lines (Tracers)", "TracersEnabled")
 CreateToggle("Wall Occlusion Check", "VisibleCheck")
 CreateToggle("Filter Own Team", "TeamCheck")
 CreateToggle("Filter Player Friends", "FriendsCheck")
@@ -516,7 +529,7 @@ local function getClosestPlayer()
     return closest
 end
 
--- Render Frame Main Loop
+-- Shielded Vector Calculation Matrix Rendering Loop
 RunService.RenderStepped:Connect(function()
     local sizeX = Camera.ViewportSize.X
     local sizeY = Camera.ViewportSize.Y
@@ -526,7 +539,10 @@ RunService.RenderStepped:Connect(function()
     local midY = sizeY / 2
     UICircleFrame.Position = UDim2.new(0, midX, 0, midY)
 
-    if not _G.AimbotConfig.Enabled then return end
+    if not _G.AimbotConfig.Enabled then 
+        UITracerFrame.Visible = false
+        return 
+    end
 
     local target = getClosestPlayer()
     if target and target.Character and target.Character:FindFirstChild("Head") then
@@ -538,4 +554,38 @@ RunService.RenderStepped:Connect(function()
         local current = Camera.CFrame.LookVector
         local weight = math.clamp(_G.AimbotConfig.Smoothing, 0.01, 1.0)
         local smoothed = current:Lerp(direction, weight)
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position +
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + smoothed)
+
+        -- STABLE COMPENSATED CENTER TRACER VECTOR PROJECTION
+        if _G.AimbotConfig.TracersEnabled then
+            local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
+            if onScreen then
+                local startVector = Vector2.new(midX, midY)
+                local endVector = Vector2.new(screenPos.X, screenPos.Y)
+                
+                local inset = GuiService:GetGuiInset()
+                endVector = endVector + inset
+
+                -- Vector projection avoids math.atan2 rotation glitches entirely
+                local distance = (endVector - startVector).Magnitude
+                local centerPosition = (startVector + endVector) / 2
+
+                UITracerFrame.Size = UDim2.new(0, 1, 0, distance)
+                UITracerFrame.Position = UDim2.new(0, centerPosition.X, 0, centerPosition.Y)
+                
+                -- Dynamic matrix alignment line angle
+                local directionVector = (endVector - startVector).Unit
+                UITracerFrame.Rotation = math.deg(math.atan2(directionVector.Y, directionVector.X)) - 90
+                UITracerFrame.Visible = true
+            else
+                UITracerFrame.Visible = false
+            end
+        else
+            UITracerFrame.Visible = false
+        end
+    else
+        UITracerFrame.Visible = false
+    end
+end)
+
+print("S43X EL hub v5.8 Custom Text-Engine & Vector Tracers Running 💕")
